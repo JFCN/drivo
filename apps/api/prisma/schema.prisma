@@ -1,0 +1,86 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Fuel {
+  GASOLINE
+  ETHANOL
+  FLEX
+  DIESEL
+  HYBRID
+  ELECTRIC
+  CNG
+}
+
+enum VehicleType {
+  CAR
+  MOTORCYCLE
+  PICKUP
+  TRUCK
+  VAN
+}
+
+model User {
+  id           String    @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  vehicles     Vehicle[]
+  avatar       UserAvatar?
+
+  @@map("users")
+}
+
+model Vehicle {
+  id              String      @id @default(uuid())
+  userId          String
+  plate           String
+  renavam         String
+  chassis         String
+  brand           String
+  model           String
+  manufactureYear Int
+  modelYear       Int
+  color           String
+  fuel            Fuel
+  type            VehicleType
+  nickname        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo           VehiclePhoto?
+
+  @@unique([userId, plate])
+  @@index([userId])
+  @@map("vehicles")
+}
+
+model VehiclePhoto {
+  vehicleId String   @id
+  data      Bytes
+  mimeType  String
+  sourceUrl String
+  updatedAt DateTime @updatedAt
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("vehicle_photos")
+}
+
+model UserAvatar {
+  userId    String   @id
+  data      Bytes
+  mimeType  String
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_avatars")
+}
